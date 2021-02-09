@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ChatClient } from './chat-client.model';
+import { ChatMessage } from './chat-message.model';
 
 @Injectable()
 export class ChatService {
-  allMessages: string[] = [];
+  allMessages: ChatMessage[] = [];
   clients: ChatClient[] = [];
 
-  newMessage(message: string): void {
-    this.allMessages.push(message);
+  addMessage(message: string, clientId: string): ChatMessage {
+    const client = this.clients.find((c) => c.id == clientId);
+    const chatMessage: ChatMessage = { message: message, sender: client };
+    this.allMessages.push(chatMessage);
+    return chatMessage;
   }
 
   getClients(): ChatClient[] {
@@ -23,7 +27,7 @@ export class ChatService {
     this.clients = this.clients.filter((c) => c.id !== id);
   }
 
-  getMessages(): string[] {
+  getMessages(): ChatMessage[] {
     return this.allMessages;
   }
 }

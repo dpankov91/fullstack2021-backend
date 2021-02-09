@@ -10,15 +10,20 @@ import { ChatService } from './shared/chat.service';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+
   allMessages: string[] = [];
   constructor(private chatService: ChatService) {}
+
   @WebSocketServer() server;
   @SubscribeMessage('message')
-  handleChatEvent(@MessageBody() message: string): void {
+  handleChatEvent(
+    @MessageBody() message: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
     console.log(message);
     this.allMessages.push(message);
-    this.chatService.newMessage(message);
-    this.server.emit('newMessage', message);
+    const chatMessage = this.chatService.addMessage(message, client.id);
+    this.server.emit('newMessage', chatMessage);
   }
 
   @SubscribeMessage('nickname')
