@@ -1,16 +1,18 @@
 import {
   ConnectedSocket,
-  MessageBody, OnGatewayConnection, OnGatewayDisconnect,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { ChatService } from './shared/chat.service';
+import { WelcomeDto } from './shared/welcome.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-
   allMessages: string[] = [];
   constructor(private chatService: ChatService) {}
 
@@ -31,7 +33,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() nickname: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    this.chatService.addClient(client.id, nickname);
+    const chatClient = this.chatService.addClient(client.id, nickname);
+    const welcome: WelcomeDto = {
+      clients: this.chatService.clients,
+      messages: this.chatService.getMessages(),
+      client: chatClient,
+    };
+    client.emit('welcome', welcome);
     this.server.emit('clients', this.chatService.getClients());
   }
 
@@ -39,7 +47,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('Client Connect', client.id);
     client.emit('allMessages', this.chatService.getMessages());
     this.server.emit('clients', this.chatService.getClients());
-
   }
 
   handleDisconnect(client: any): any {

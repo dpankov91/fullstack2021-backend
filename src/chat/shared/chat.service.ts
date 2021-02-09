@@ -18,9 +18,10 @@ export class ChatService {
     return this.clients;
   }
 
-  addClient(id: string, nickname: string) {
+  addClient(id: string, nickname: string): ChatClient {
     const chatClient: ChatClient = { id: id, nickname: nickname };
     this.clients.push(chatClient);
+    return chatClient;
   }
 
   delete(id: string) {
