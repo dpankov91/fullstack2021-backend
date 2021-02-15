@@ -40,4 +40,13 @@ export class ChatService {
   getMessages(): ChatMessage[] {
     return this.allMessages;
   }
+
+  updateTyping(isTyping: boolean, id: string): ChatClient {
+    const chatClient = this.clients.find((c) => c.id === id);
+    if (chatClient && chatClient.isTyping !== isTyping) {
+      chatClient.isTyping = isTyping;
+      return chatClient;
+    }
+    return undefined;
+  }
 }
